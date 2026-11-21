@@ -6,18 +6,18 @@ Use the database as the single source of truth (SSOT) for mapped values. Update 
 
 ## Use the add-in
 
-1. In GitHub Actions, download the Release artifact that covers the version shown in AutoCAD’s About dialog. Extract it and keep the DLLs together.
+1. From the GitHub [Releases](https://github.com/zachcmathews/FetchBlockData/releases) page, download the ZIP that covers the version shown in AutoCAD’s About dialog. Extract it and keep the DLLs together.
 2. In AutoCAD, use `NETLOAD` to load `FetchBlockData.dll`.
 3. Save the example below as a local `config.yaml` and adapt it to your drawing and database.
 4. Run `FETCHBLOCKDATA` and select the YAML file. The command reads the database in read-only mode and updates matching block inserts in model space and every paper-space layout of the active drawing.
 
 ## Build targets
 
-| AutoCAD versions | Runtime | Release artifact |
+| AutoCAD versions | Runtime | Release ZIP |
 | --- | --- | --- |
-| 2026 through 2026.1.1 | .NET 8 | `FetchBlockData-AutoCAD-2026-Release-win-x64` |
-| 2026.1.2 and later 2026 updates | .NET 10 | `FetchBlockData-AutoCAD-2026.1.2-Release-win-x64` |
-| 2027 and its updates | .NET 10 | `FetchBlockData-AutoCAD-2027-Release-win-x64` |
+| 2026 through 2026.1.1 | .NET 8 | `FetchBlockData-AutoCAD-2026-Release-win-x64.zip` |
+| 2026.1.2 and later 2026 updates | .NET 10 | `FetchBlockData-AutoCAD-2026.1.2-Release-win-x64.zip` |
+| 2027 and its updates | .NET 10 | `FetchBlockData-AutoCAD-2027-Release-win-x64.zip` |
 
 Set `AutoCADVersion` to `2026`, `2026.1.2`, or `2027` for a local build.
 
@@ -26,6 +26,8 @@ dotnet build FetchBlockData.csproj -c Release -p:AutoCADVersion=2026.1.2
 ```
 
 Local builds default to the AutoCAD 2027 target.
+
+Push a version tag such as `v1.0.0` to publish a release after the build and tests pass. Tags such as `v1.0.0-rc.1` publish as prereleases.
 
 ## Example config.yaml
 

@@ -5,6 +5,8 @@ name: Build and test FetchBlockData
 
 on:
   push:
+    branches: ['**']
+    tags: ['v[0-9]*']
   pull_request:
   workflow_dispatch:
 
@@ -66,3 +68,44 @@ jobs:
           name: FetchBlockData-AutoCAD-${{ matrix.autocad-version }}-${{ matrix.configuration }}-win-x64
           path: artifact/
           if-no-files-found: error
+          overwrite: true
+
+  release:
+    name: Publish GitHub release
+    if: github.event_name == 'push' && !github.event.deleted && startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          path: artifacts
+          pattern: FetchBlockData-AutoCAD-*-Release-win-x64
+
+      - name: Package release assets
+        shell: bash
+        run: |
+          mkdir -p release
+          for version in 2026 2026.1.2 2027; do
+            name="FetchBlockData-AutoCAD-$version-Release-win-x64"
+            if [[ ! -f "artifacts/$name/FetchBlockData.dll" ]]; then
+              echo "::error::Missing release artifact $name"
+              exit 1
+            fi
+            (cd "artifacts/$name" && zip -qr "$GITHUB_WORKSPACE/release/$name.zip" .)
+          done
+
+      - name: Create release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          release_flags=()
+          if [[ "${GITHUB_REF_NAME%%+*}" == *-* ]]; then
+            release_flags+=(--prerelease)
+          fi
+          gh release create "$GITHUB_REF_NAME" release/*.zip \
+            --repo "$GITHUB_REPOSITORY" --verify-tag --generate-notes \
+            --title "FetchBlockData $GITHUB_REF_NAME" "${release_flags[@]}"
