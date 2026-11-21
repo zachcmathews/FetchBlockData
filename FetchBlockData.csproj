@@ -1,0 +1,32 @@
+﻿<!--
+  SPDX-License-Identifier: Apache-2.0
+  See LICENSE in the project root.
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>12.0</LangVersion>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(AutoCadPackageVersion)' != ''">
+    <PackageReference Include="AutoCAD.NET" Version="$(AutoCadPackageVersion)" IncludeAssets="compile" PrivateAssets="all" />
+    <PackageReference Include="AutoCAD.NET.Core" Version="$(AutoCadPackageVersion)" IncludeAssets="compile" PrivateAssets="all" />
+    <PackageReference Include="AutoCAD.NET.Model" Version="$(AutoCadPackageVersion)" IncludeAssets="compile" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.15" />
+    <PackageReference Include="YamlDotNet" Version="18.1.0" />
+    <Compile Remove="tests/**/*.cs" />
+    <InternalsVisibleTo Include="FetchBlockData.Tests" />
+    <None Update="LICENSE" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <Target Name="ValidateAutoCADVersion" BeforeTargets="CollectPackageReferences;PrepareForBuild">
+    <Error Condition="'$(AutoCadPackageVersion)' == ''" Text="Unsupported AutoCADVersion '$(AutoCADVersion)'. See the README for supported versions." />
+  </Target>
+
+</Project>

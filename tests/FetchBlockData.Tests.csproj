@@ -1,0 +1,18 @@
+<!--
+  SPDX-License-Identifier: Apache-2.0
+  See LICENSE in the project root.
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <LangVersion>12.0</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest" Version="4.5.3" />
+    <ProjectReference Include="../FetchBlockData.csproj" />
+    <None Update="example-rules.yaml" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

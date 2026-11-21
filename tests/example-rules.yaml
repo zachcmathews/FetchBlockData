@@ -1,0 +1,38 @@
+# SPDX-License-Identifier: Apache-2.0
+# See LICENSE in the project root.
+
+version: 1
+database: ./test-items.gpkg
+rules:
+  - block:
+      name: ITEM_LABEL
+      key: UUID
+    table:
+      name: items
+      key: uuid
+    mappings:
+      - block: { attribute: ID }
+        table: { column: id }
+      - block: { attribute: QUANTITY }
+        table: { column: quantity }
+      - block: { attribute: MEASUREMENT }
+        table: { column: measurement }
+      - block: { attribute: ACTIVE }
+        table: { column: active }
+      - block: { attribute: VERIFIED }
+        table: { column: verified }
+  - block:
+      name: GROUP_LABEL
+      key: UUID
+    table:
+      name: item_groups
+      key: uuid
+    mappings:
+      - block: { attribute: ID }
+        table: { column: id }
+      - block: { attribute: QUANTITY }
+        table: { column: quantity }
+      - block: { attribute: DESCRIPTION }
+        table: { column: description }
+      - block: { attribute: STATUS }
+        table: { column: status }

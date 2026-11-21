@@ -1,0 +1,68 @@
+# SPDX-License-Identifier: Apache-2.0
+# See LICENSE in the project root.
+
+name: Build and test FetchBlockData
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: AutoCAD ${{ matrix.autocad-version }} / ${{ matrix.configuration }}
+    runs-on: windows-2025
+    strategy:
+      fail-fast: false
+      matrix:
+        autocad-version: ['2026', '2026.1.2', '2027']
+        configuration: [Debug, Release]
+    env:
+      AUTOCAD_VERSION: ${{ matrix.autocad-version }}
+      BUILD_CONFIGURATION: ${{ matrix.configuration }}
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Restore
+        run: dotnet restore tests/FetchBlockData.Tests.csproj -p:AutoCADVersion=$env:AUTOCAD_VERSION
+
+      - name: Build
+        run: dotnet build FetchBlockData.csproj --no-restore --configuration $env:BUILD_CONFIGURATION -p:AutoCADVersion=$env:AUTOCAD_VERSION
+
+      - name: Test
+        run: dotnet test tests/FetchBlockData.Tests.csproj --no-restore --configuration $env:BUILD_CONFIGURATION -p:AutoCADVersion=$env:AUTOCAD_VERSION
+
+      - name: Stage add-in
+        run: |
+          $output = dotnet msbuild FetchBlockData.csproj -getProperty:TargetDir -p:Configuration=$env:BUILD_CONFIGURATION -p:AutoCADVersion=$env:AUTOCAD_VERSION
+          $required = "FetchBlockData.dll", "YamlDotNet.dll", "Microsoft.Data.Sqlite.dll", "e_sqlite3.dll", "LICENSE"
+          foreach ($file in $required) {
+            if (!(Test-Path (Join-Path $output $file))) {
+              throw "Missing deployment file: $file"
+            }
+          }
+          foreach ($file in @("AcMgd.dll", "AcCoreMgd.dll", "AcDbMgd.dll")) {
+            if (Test-Path (Join-Path $output $file)) {
+              throw "Unexpected Autodesk host assembly: $file"
+            }
+          }
+          New-Item -ItemType Directory -Path artifact
+          Copy-Item "$output/*" -Destination artifact -Recurse
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: FetchBlockData-AutoCAD-${{ matrix.autocad-version }}-${{ matrix.configuration }}-win-x64
+          path: artifact/
+          if-no-files-found: error
